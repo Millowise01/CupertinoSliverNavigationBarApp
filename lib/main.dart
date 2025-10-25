@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'dart:math';
 
 void main() {
   runApp(MyApp());
@@ -10,7 +9,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      title: 'Gallery App',
+      title: 'Photo Gallery',
+      debugShowCheckedModeBanner: false,
       theme: CupertinoThemeData(
         brightness: Brightness.light,
         primaryColor: CupertinoColors.systemBlue,
@@ -25,18 +25,22 @@ class GalleryScreen extends StatefulWidget {
   _GalleryScreenState createState() => _GalleryScreenState();
 }
 
-class _GalleryScreenState extends State<GalleryScreen> {
-  CupertinoDynamicColor _backgroundColor = CupertinoColors.systemBackground;
+class _GalleryScreenState extends State<GalleryScreen> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   List<GalleryItem> _filteredItems = [];
   final Set<int> _favorites = {};
+  bool _isGridView = true;
+  late AnimationController _animationController;
+  
   final List<GalleryItem> items = List.generate(
-    20,
+    10,
     (index) => GalleryItem(
       id: index + 1,
       title: _getPhotoTitle(index),
       subtitle: _getPhotoSubtitle(index),
-      imageUrl: _getUnsplashImage(index),
+      imageUrl: _getUniquePhotoImage(index),
+      country: _getPhotoCategory(index),
+      population: _getPhotoResolution(index),
       color: _getRandomColor(index),
     ),
   );
@@ -46,282 +50,40 @@ class _GalleryScreenState extends State<GalleryScreen> {
     super.initState();
     _filteredItems = items;
     _searchController.addListener(_filterItems);
+    _animationController = AnimationController(
+      duration: Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   void _filterItems() {
     setState(() {
       _filteredItems = items.where((item) =>
-        item.title.toLowerCase().contains(_searchController.text.toLowerCase())
+        item.title.toLowerCase().contains(_searchController.text.toLowerCase()) ||
+        item.country.toLowerCase().contains(_searchController.text.toLowerCase())
       ).toList();
     });
   }
 
   void _toggleFavorite(int id) {
     setState(() {
-      if (_favorites.contains(id)) {
-        _favorites.remove(id);
-      } else {
-        _favorites.add(id);
-      }
+      HapticFeedback.lightImpact();
+      _favorites.contains(id) ? _favorites.remove(id) : _favorites.add(id);
     });
   }
 
-  Future<void> _refreshGallery() async {
-    await Future.delayed(Duration(seconds: 1));
-    _addMultiplePhotos();
-  }
-
-  static String _getUnsplashImage(int index) {
-    final imageId = 400 + index;
-    return 'https://picsum.photos/id/$imageId/400/400';
-  }
-
-  static String _getPhotoTitle(int index) {
-    final titles = [
-      'Mountain Vista', 'City Lights', 'Ocean Waves', 'Forest Path',
-      'Desert Sunset', 'Urban Street', 'Flower Garden', 'Snowy Peak',
-      'Beach Paradise', 'Autumn Leaves', 'Night Sky', 'River Valley',
-      'Modern Architecture', 'Wildlife Safari', 'Coastal View', 'Country Road',
-      'Tropical Island', 'Winter Wonderland', 'Spring Meadow', 'Summer Breeze'
-    ];
-    return titles[index % titles.length];
-  }
-
-  static String _getPhotoSubtitle(int index) {
-    final subtitles = [
-      'Breathtaking landscape', 'Urban photography', 'Natural beauty', 'Scenic route',
-      'Golden hour magic', 'Street photography', 'Colorful blooms', 'Alpine adventure',
-      'Tropical paradise', 'Seasonal colors', 'Starry night', 'Peaceful waters',
-      'Modern design', 'Wildlife encounter', 'Ocean view', 'Rural charm',
-      'Island getaway', 'Snowy landscape', 'Fresh greenery', 'Warm weather'
-    ];
-    return subtitles[index % subtitles.length];
-  }
-
-  static CupertinoDynamicColor _getRandomColor(int index) {
-    final colors = [
-      CupertinoColors.systemBlue,
-      CupertinoColors.systemGreen,
-      CupertinoColors.systemOrange,
-      CupertinoColors.systemPink,
-      CupertinoColors.systemPurple,
-      CupertinoColors.systemTeal,
-      CupertinoColors.systemIndigo,
-      CupertinoColors.systemRed,
-    ];
-    return colors[index % colors.length];
-  }
-
-  void _showOptionsDialog() {
-    HapticFeedback.lightImpact();
-    showCupertinoModalPopup(
-      context: context,
-      builder: (context) => CupertinoActionSheet(
-        title: Text('Gallery Options'),
-        actions: [
-          CupertinoActionSheetAction(
-            child: Text('Add Photos'),
-            onPressed: () {
-              Navigator.pop(context);
-              _addMultiplePhotos();
-            },
-          ),
-          CupertinoActionSheetAction(
-            child: Text('Change Background'),
-            onPressed: () {
-              Navigator.pop(context);
-              _showBackgroundOptions();
-            },
-          ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          child: Text('Cancel'),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-    );
-  }
-
-  void _addMultiplePhotos() {
+  void _toggleView() {
     setState(() {
-      for (int i = 0; i < 3; i++) {
-        final newIndex = items.length + i;
-        items.insert(
-          0,
-          GalleryItem(
-            id: newIndex + 1,
-            title: _getPhotoTitle(newIndex),
-            subtitle: 'Recently added',
-            imageUrl: _getUnsplashImage(newIndex + 100),
-            color: _getRandomColor(newIndex),
-          ),
-        );
-      }
+      _isGridView = !_isGridView;
+      HapticFeedback.selectionClick();
     });
-  }
-
-  void _showBackgroundOptions() {
-    showCupertinoModalPopup(
-      context: context,
-      builder: (context) => CupertinoActionSheet(
-        title: Text('Choose Background Color'),
-        message: Text('Select a background color for your gallery'),
-        actions: [
-          CupertinoActionSheetAction(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: CupertinoColors.systemBackground.resolveFrom(context),
-                    border: Border.all(color: CupertinoColors.systemGrey),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Text('Light White'),
-              ],
-            ),
-            onPressed: () {
-              setState(() => _backgroundColor = CupertinoColors.systemBackground);
-              Navigator.pop(context);
-            },
-          ),
-          CupertinoActionSheetAction(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: CupertinoColors.systemGrey6.resolveFrom(context),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Text('Light Grey'),
-              ],
-            ),
-            onPressed: () {
-              setState(() => _backgroundColor = CupertinoColors.systemGrey6);
-              Navigator.pop(context);
-            },
-          ),
-          CupertinoActionSheetAction(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: CupertinoColors.systemGrey5.resolveFrom(context),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Text('Medium Grey'),
-              ],
-            ),
-            onPressed: () {
-              setState(() => _backgroundColor = CupertinoColors.systemGrey5);
-              Navigator.pop(context);
-            },
-          ),
-          CupertinoActionSheetAction(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: CupertinoColors.systemBlue.resolveFrom(context),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Text('Ocean Blue'),
-              ],
-            ),
-            onPressed: () {
-              setState(() => _backgroundColor = CupertinoColors.systemBlue);
-              Navigator.pop(context);
-            },
-          ),
-          CupertinoActionSheetAction(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: CupertinoColors.systemGreen.resolveFrom(context),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Text('Nature Green'),
-              ],
-            ),
-            onPressed: () {
-              setState(() => _backgroundColor = CupertinoColors.systemGreen);
-              Navigator.pop(context);
-            },
-          ),
-          CupertinoActionSheetAction(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: CupertinoColors.systemPurple.resolveFrom(context),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Text('Royal Purple'),
-              ],
-            ),
-            onPressed: () {
-              setState(() => _backgroundColor = CupertinoColors.systemPurple);
-              Navigator.pop(context);
-            },
-          ),
-          CupertinoActionSheetAction(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: CupertinoColors.systemPink.resolveFrom(context),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Text('Sunset Pink'),
-              ],
-            ),
-            onPressed: () {
-              setState(() => _backgroundColor = CupertinoColors.systemPink);
-              Navigator.pop(context);
-            },
-          ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          child: Text('Cancel'),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-    );
   }
 
   void _showItemDetails(GalleryItem item) {
@@ -329,9 +91,66 @@ class _GalleryScreenState extends State<GalleryScreen> {
     Navigator.push(
       context,
       CupertinoPageRoute(
-        builder: (context) => PhotoDetailScreen(item: item),
+        builder: (context) => CityDetailScreen(item: item),
       ),
     );
+  }
+
+  static String _getUniquePhotoImage(int index) {
+    final photoIds = [
+      '1506905925346-21bda4d32df4', // Mountain landscape
+      '1514565131-fce0801e5785', // City lights at night
+      '1505142468610-359e7d316be0', // Ocean waves
+      '1441974231531-c6227db76b6e', // Forest path
+      '1506197603052-3cc9c3a201bd', // Desert sunset
+      '1477959858617-67f85cf4f1df', // Urban street
+      '1490750967868-88aa4486c946', // Flower garden
+      '1551698618-1dfe5d97d256', // Snowy mountain peak
+      '1507525428034-b723cf961d3e', // Tropical beach
+      '1507041957456-9c397ce39c97'  // Autumn leaves
+    ];
+    return 'https://images.unsplash.com/photo-${photoIds[index]}?w=500&h=500&fit=crop&auto=format';
+  }
+
+  static String _getPhotoTitle(int index) {
+    final titles = [
+      'Mountain Vista', 'City Lights', 'Ocean Waves', 'Forest Path', 'Desert Sunset',
+      'Urban Street', 'Flower Garden', 'Snowy Peak', 'Beach Paradise', 'Autumn Leaves'
+    ];
+    return titles[index];
+  }
+
+  static String _getPhotoSubtitle(int index) {
+    final subtitles = [
+      'Breathtaking mountain landscape', 'Urban night photography', 'Powerful ocean waves', 'Peaceful forest trail', 'Golden desert sunset',
+      'Vibrant street scene', 'Colorful garden blooms', 'Majestic snowy peak', 'Pristine tropical beach', 'Beautiful autumn foliage'
+    ];
+    return subtitles[index];
+  }
+
+  static String _getPhotoCategory(int index) {
+    final categories = [
+      'Nature', 'Urban', 'Seascape', 'Forest', 'Desert',
+      'Street', 'Macro', 'Winter', 'Beach', 'Seasonal'
+    ];
+    return categories[index];
+  }
+
+  static String _getPhotoResolution(int index) {
+    final resolutions = [
+      '4K', '8K', 'HD', '2K', '5K',
+      'Ultra HD', 'Full HD', '6K', '3K', 'QHD'
+    ];
+    return resolutions[index];
+  }
+
+  static CupertinoDynamicColor _getRandomColor(int index) {
+    final colors = [
+      CupertinoColors.systemBlue, CupertinoColors.systemGreen, CupertinoColors.systemOrange,
+      CupertinoColors.systemPink, CupertinoColors.systemPurple, CupertinoColors.systemTeal,
+      CupertinoColors.systemIndigo, CupertinoColors.systemRed,
+    ];
+    return colors[index % colors.length];
   }
 
   int _getCrossAxisCount(BuildContext context) {
@@ -342,80 +161,32 @@ class _GalleryScreenState extends State<GalleryScreen> {
     return 2;
   }
 
-  double _getCardAspectRatio(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    return width > 800 ? 0.9 : 0.85;
-  }
-
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: _backgroundColor,
       child: CustomScrollView(
         physics: BouncingScrollPhysics(),
         slivers: [
           CupertinoSliverNavigationBar(
-            largeTitle: Text(
-              'Gallery',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                letterSpacing: -0.5,
-              ),
-            ),
-            backgroundColor: CupertinoColors.systemBackground.resolveFrom(context),
-            border: Border(
-              bottom: BorderSide(
-                color: CupertinoColors.separator.resolveFrom(context),
-                width: 0.5,
-              ),
-            ),
+            largeTitle: Text('Photo Gallery'),
+            backgroundColor: CupertinoColors.systemBackground,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 CupertinoButton(
                   padding: EdgeInsets.zero,
-                  onPressed: _showBackgroundOptions,
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: _backgroundColor.resolveFrom(context),
-                      border: Border.all(
-                        color: CupertinoColors.systemGrey,
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                  onPressed: _toggleView,
+                  child: AnimatedSwitcher(
+                    duration: Duration(milliseconds: 200),
                     child: Icon(
-                      CupertinoIcons.paintbrush,
-                      color: CupertinoColors.label.resolveFrom(context),
-                      size: 16,
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _showOptionsDialog,
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: CupertinoColors.systemBlue,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(
-                      CupertinoIcons.add,
-                      color: CupertinoColors.white,
-                      size: 18,
+                      _isGridView ? CupertinoIcons.list_bullet : CupertinoIcons.grid,
+                      key: ValueKey(_isGridView),
+                      size: 24,
                     ),
                   ),
                 ),
               ],
             ),
-          ),
-          CupertinoSliverRefreshControl(
-            onRefresh: _refreshGallery,
           ),
           SliverToBoxAdapter(
             child: Padding(
@@ -423,30 +194,64 @@ class _GalleryScreenState extends State<GalleryScreen> {
               child: CupertinoSearchTextField(
                 controller: _searchController,
                 placeholder: 'Search photos...',
+                style: TextStyle(fontSize: 16),
               ),
             ),
           ),
-          SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            sliver: SliverGrid(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: _getCrossAxisCount(context),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: _getCardAspectRatio(context),
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => GalleryCard(
-                  item: _filteredItems[index],
-                  isFavorite: _favorites.contains(_filteredItems[index].id),
-                  onTap: () => _showItemDetails(_filteredItems[index]),
-                  onFavorite: () => _toggleFavorite(_filteredItems[index].id),
-                ),
-                childCount: _filteredItems.length,
-              ),
-            ),
-          ),
+          _isGridView ? _buildGridView() : _buildListView(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGridView() {
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      sliver: SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: _getCrossAxisCount(context),
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 0.85,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, index) => FadeTransition(
+            opacity: _animationController,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: Offset(0, 0.3),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: _animationController,
+                curve: Interval(index * 0.1, 1.0, curve: Curves.easeOut),
+              )),
+              child: CityCard(
+                item: _filteredItems[index],
+                isFavorite: _favorites.contains(_filteredItems[index].id),
+                onTap: () => _showItemDetails(_filteredItems[index]),
+                onFavorite: () => _toggleFavorite(_filteredItems[index].id),
+              ),
+            ),
+          ),
+          childCount: _filteredItems.length,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListView() {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => FadeTransition(
+          opacity: _animationController,
+          child: CityListTile(
+            item: _filteredItems[index],
+            isFavorite: _favorites.contains(_filteredItems[index].id),
+            onTap: () => _showItemDetails(_filteredItems[index]),
+            onFavorite: () => _toggleFavorite(_filteredItems[index].id),
+          ),
+        ),
+        childCount: _filteredItems.length,
       ),
     );
   }
@@ -457,6 +262,8 @@ class GalleryItem {
   final String title;
   final String subtitle;
   final String imageUrl;
+  final String country;
+  final String population;
   final CupertinoDynamicColor color;
 
   GalleryItem({
@@ -464,17 +271,19 @@ class GalleryItem {
     required this.title,
     required this.subtitle,
     required this.imageUrl,
+    required this.country,
+    required this.population,
     required this.color,
   });
 }
 
-class GalleryCard extends StatelessWidget {
+class CityCard extends StatelessWidget {
   final GalleryItem item;
   final bool isFavorite;
   final VoidCallback onTap;
   final VoidCallback onFavorite;
 
-  const GalleryCard({
+  const CityCard({
     Key? key,
     required this.item,
     required this.isFavorite,
@@ -489,19 +298,19 @@ class GalleryCard extends StatelessWidget {
       onPressed: onTap,
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: CupertinoColors.systemGrey.withOpacity(0.2),
-              blurRadius: 8,
-              offset: Offset(0, 4),
+              color: CupertinoColors.systemGrey.withOpacity(0.15),
+              blurRadius: 12,
+              offset: Offset(0, 6),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           child: Container(
-            color: CupertinoColors.systemBackground.resolveFrom(context),
+            color: CupertinoColors.systemBackground,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -509,104 +318,71 @@ class GalleryCard extends StatelessWidget {
                   flex: 3,
                   child: Stack(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                      Hero(
+                        tag: 'city-${item.id}',
                         child: Image.network(
                           item.imageUrl,
                           fit: BoxFit.cover,
                           width: double.infinity,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    item.color.resolveFrom(context),
-                                    item.color.resolveFrom(context).withOpacity(0.7),
-                                  ],
-                                ),
-                              ),
-                              child: Center(
-                                child: CupertinoActivityIndicator(),
-                              ),
-                            );
-                          },
+                          height: double.infinity,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
                                   colors: [
                                     item.color.resolveFrom(context),
                                     item.color.resolveFrom(context).withOpacity(0.7),
                                   ],
                                 ),
                               ),
-                              child: Center(
-                                child: Icon(
-                                  CupertinoIcons.photo,
-                                  size: 40,
-                                  color: CupertinoColors.white,
-                                ),
-                              ),
+                              child: Icon(CupertinoIcons.photo, size: 40, color: CupertinoColors.white),
                             );
                           },
                         ),
                       ),
                       Positioned(
-                        top: 8,
-                        right: 8,
+                        top: 12,
+                        right: 12,
                         child: CupertinoButton(
                           padding: EdgeInsets.zero,
-                          minSize: 32,
+                          minSize: 36,
                           onPressed: onFavorite,
                           child: Container(
-                            width: 32,
-                            height: 32,
+                            width: 36,
+                            height: 36,
                             decoration: BoxDecoration(
-                              color: CupertinoColors.black.withOpacity(0.3),
-                              borderRadius: BorderRadius.circular(16),
+                              color: CupertinoColors.black.withOpacity(0.4),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: CupertinoColors.white.withOpacity(0.3)),
                             ),
                             child: Icon(
                               isFavorite ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
                               color: isFavorite ? CupertinoColors.systemRed : CupertinoColors.white,
-                              size: 16,
+                              size: 18,
                             ),
                           ),
                         ),
                       ),
                     ],
                   ),
-
                 ),
                 Expanded(
                   flex: 1,
                   child: Padding(
-                    padding: EdgeInsets.all(12),
+                    padding: EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           item.title,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: CupertinoColors.label.resolveFrom(context),
-                          ),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        SizedBox(height: 2),
+                        SizedBox(height: 4),
                         Text(
-                          item.subtitle,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: CupertinoColors.secondaryLabel.resolveFrom(context),
-                          ),
+                          '${item.country} • ${item.population}',
+                          style: TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -623,138 +399,172 @@ class GalleryCard extends StatelessWidget {
   }
 }
 
-class PhotoDetailScreen extends StatelessWidget {
+class CityListTile extends StatelessWidget {
+  final GalleryItem item;
+  final bool isFavorite;
+  final VoidCallback onTap;
+  final VoidCallback onFavorite;
+
+  const CityListTile({
+    Key? key,
+    required this.item,
+    required this.isFavorite,
+    required this.onTap,
+    required this.onFavorite,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: onTap,
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: CupertinoColors.systemBackground,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: CupertinoColors.systemGrey.withOpacity(0.1),
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                item.imageUrl,
+                width: 70,
+                height: 70,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          item.color.resolveFrom(context),
+                          item.color.resolveFrom(context).withOpacity(0.7),
+                        ],
+                      ),
+                    ),
+                    child: Icon(CupertinoIcons.photo, size: 28, color: CupertinoColors.white),
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    item.country,
+                    style: TextStyle(fontSize: 14, color: CupertinoColors.secondaryLabel),
+                  ),
+                  Text(
+                    '${item.population} • ${item.subtitle}',
+                    style: TextStyle(fontSize: 12, color: CupertinoColors.tertiaryLabel),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: onFavorite,
+              child: Icon(
+                isFavorite ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
+                color: isFavorite ? CupertinoColors.systemRed : CupertinoColors.systemGrey,
+                size: 22,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CityDetailScreen extends StatelessWidget {
   final GalleryItem item;
 
-  const PhotoDetailScreen({Key? key, required this.item}) : super(key: key);
+  const CityDetailScreen({Key? key, required this.item}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: Text(item.title),
-        backgroundColor: CupertinoColors.systemBackground.resolveFrom(context),
       ),
       child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(20),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: CupertinoColors.systemGrey.withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
+              Hero(
+                tag: 'city-${item.id}',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: AspectRatio(
+                    aspectRatio: 1,
                     child: Image.network(
                       item.imageUrl,
                       fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                item.color.resolveFrom(context),
-                                item.color.resolveFrom(context).withOpacity(0.7),
-                              ],
-                            ),
-                          ),
-                          child: Center(
-                            child: CupertinoActivityIndicator(radius: 20),
-                          ),
-                        );
-                      },
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
                               colors: [
                                 item.color.resolveFrom(context),
                                 item.color.resolveFrom(context).withOpacity(0.7),
                               ],
                             ),
                           ),
-                          child: Center(
-                            child: Icon(
-                              CupertinoIcons.photo,
-                              size: 80,
-                              color: CupertinoColors.white,
-                            ),
-                          ),
+                          child: Icon(CupertinoIcons.photo, size: 80, color: CupertinoColors.white),
                         );
                       },
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 24),
+              SizedBox(height: 32),
               Text(
                 item.title,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: CupertinoColors.label.resolveFrom(context),
-                ),
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 8),
               Text(
-                item.subtitle,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: CupertinoColors.secondaryLabel.resolveFrom(context),
-                ),
+                item.country,
+                style: TextStyle(fontSize: 20, color: CupertinoColors.secondaryLabel),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: CupertinoButton.filled(
-                      child: Text('Add Photos'),
-                      onPressed: () {
-                        HapticFeedback.mediumImpact();
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                            builder: (context) => GalleryScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: CupertinoButton(
-                      color: CupertinoColors.systemGrey4,
-                      child: Text(
-                        'Change BG',
-                        style: TextStyle(color: CupertinoColors.label),
-                      ),
-                      onPressed: () {
-                        HapticFeedback.mediumImpact();
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ),
-                ],
+              SizedBox(height: 8),
+              Text(
+                'Resolution: ${item.population}',
+                style: TextStyle(fontSize: 16, color: CupertinoColors.tertiaryLabel),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24),
+              Text(
+                item.subtitle,
+                style: TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
