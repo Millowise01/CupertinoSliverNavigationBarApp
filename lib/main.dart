@@ -212,7 +212,7 @@ class _GalleryScreenState extends State<GalleryScreen> with TickerProviderStateM
           crossAxisCount: _getCrossAxisCount(context),
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-          childAspectRatio: 0.85,
+          childAspectRatio: 0.9,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) => FadeTransition(
@@ -369,7 +369,7 @@ class CityCard extends StatelessWidget {
                 Expanded(
                   flex: 1,
                   child: Padding(
-                    padding: EdgeInsets.all(16),
+                    padding: EdgeInsets.all(12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

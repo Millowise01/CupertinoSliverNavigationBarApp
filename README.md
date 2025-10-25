@@ -5,11 +5,13 @@ A beautiful iOS-style photo gallery app showcasing the CupertinoSliverNavigation
 ## Features
 
 ### CupertinoSliverNavigationBar Properties
+
 - **largeTitle**: "Photo Gallery" - Displays large title that smoothly collapses when scrolling
 - **backgroundColor**: Clean system background with subtle border
 - **trailing**: Grid/List view toggle button for different viewing modes
 
 ### Enhanced Features
+
 - **10 Curated Photos**: High-quality images with accurate descriptions
 - **Responsive Grid**: Adapts from 2-5 columns based on screen width
 - **Grid/List Toggle**: Switch between grid and list viewing modes
@@ -21,6 +23,7 @@ A beautiful iOS-style photo gallery app showcasing the CupertinoSliverNavigation
 - **No Debug Banner**: Clean production appearance
 
 ### Photo Collection
+
 1. **Mountain Vista** - Breathtaking mountain landscape (Nature, 4K)
 2. **City Lights** - Urban night photography (Urban, 8K)
 3. **Ocean Waves** - Powerful ocean waves (Seascape, HD)
@@ -51,7 +54,6 @@ A beautiful iOS-style photo gallery app showcasing the CupertinoSliverNavigation
 
 ## Project Structure
 
-```
 lib/
 ├── main.dart              # Main app with gallery implementation
 test/
@@ -60,20 +62,23 @@ web/
 ├── index.html            # Web entry point
 ├── manifest.json         # Web app manifest
 └── icons/                # App icons
-```
 
 ## Screenshots
 
 The app features a clean, iOS-style interface with:
+
 - Collapsible navigation bar with large title
 - Responsive photo grid that adapts to screen size
 - Smooth animations and transitions
 - Beautiful photo cards with favorites functionality
 - Detailed photo view with hero animations
 
+![Alt Text](Image URL )
+
 ## Development
 
 This project demonstrates advanced Flutter concepts including:
+
 - Custom scroll views with slivers
 - Responsive design patterns
 - Animation controllers and transitions
