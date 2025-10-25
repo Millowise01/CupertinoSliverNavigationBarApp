@@ -109,7 +109,7 @@ class _GalleryScreenState extends State<GalleryScreen> with TickerProviderStateM
       '1507525428034-b723cf961d3e', // Tropical beach
       '1507041957456-9c397ce39c97'  // Autumn leaves
     ];
-    return 'https://images.unsplash.com/photo-${photoIds[index]}?w=500&h=500&fit=crop&auto=format';
+    return 'https://images.unsplash.com/photo-${photoIds[index]}?w=300&h=300&fit=crop&auto=format';
   }
 
   static String _getPhotoTitle(int index) {
