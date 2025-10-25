@@ -318,26 +318,26 @@ class CityCard extends StatelessWidget {
                   flex: 3,
                   child: Stack(
                     children: [
-                      Hero(
-                        tag: 'city-${item.id}',
-                        child: Image.network(
-                          item.imageUrl,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    item.color.resolveFrom(context),
-                                    item.color.resolveFrom(context).withOpacity(0.7),
-                                  ],
+                      Expanded(
+                        child: Hero(
+                          tag: 'city-${item.id}',
+                          child: Image.network(
+                            item.imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      item.color.resolveFrom(context),
+                                      item.color.resolveFrom(context).withOpacity(0.7),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              child: Icon(CupertinoIcons.photo, size: 40, color: CupertinoColors.white),
-                            );
-                          },
+                                child: Icon(CupertinoIcons.photo, size: 40, color: CupertinoColors.white),
+                              );
+                            },
+                          ),
                         ),
                       ),
                       Positioned(
@@ -436,26 +436,26 @@ class CityListTile extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                item.imageUrl,
+              child: SizedBox(
                 width: 70,
                 height: 70,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          item.color.resolveFrom(context),
-                          item.color.resolveFrom(context).withOpacity(0.7),
-                        ],
+                child: Image.network(
+                  item.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            item.color.resolveFrom(context),
+                            item.color.resolveFrom(context).withOpacity(0.7),
+                          ],
+                        ),
                       ),
-                    ),
-                    child: Icon(CupertinoIcons.photo, size: 28, color: CupertinoColors.white),
-                  );
-                },
+                      child: Icon(CupertinoIcons.photo, size: 28, color: CupertinoColors.white),
+                    );
+                  },
+                ),
               ),
             ),
             SizedBox(width: 16),
@@ -522,22 +522,24 @@ class CityDetailScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24),
                   child: AspectRatio(
                     aspectRatio: 1,
-                    child: Image.network(
-                      item.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                item.color.resolveFrom(context),
-                                item.color.resolveFrom(context).withOpacity(0.7),
-                              ],
+                    child: Expanded(
+                      child: Image.network(
+                        item.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  item.color.resolveFrom(context),
+                                  item.color.resolveFrom(context).withOpacity(0.7),
+                                ],
+                              ),
                             ),
-                          ),
-                          child: Icon(CupertinoIcons.photo, size: 80, color: CupertinoColors.white),
-                        );
-                      },
+                            child: Icon(CupertinoIcons.photo, size: 80, color: CupertinoColors.white),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
