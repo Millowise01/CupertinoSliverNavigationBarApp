@@ -65,6 +65,11 @@ web/
 
 ## Screenshots
 
+<img width="358" height="726" alt="iPhone-13-PRO-localhost (1)" src="https://github.com/user-attachments/assets/6ba6a28e-a11a-4370-8534-9fcc1d181703" />
+<img width="358" height="726" alt="iPhone-13-PRO-localhost" src="https://github.com/user-attachments/assets/cec46e09-5880-4588-ad04-88d14e326188" />
+<img width="358" height="726" alt="iPhone-13-PRO-localhost (3)" src="https://github.com/user-attachments/assets/0688f17a-8068-4dad-b4ec-073053a358ae" />
+<img width="358" height="726" alt="iPhone-13-PRO-localhost (2)" src="https://github.com/user-attachments/assets/3efca81e-6585-4772-a577-12c4452d860a" />
+
 The app features a clean, iOS-style interface with:
 
 - Collapsible navigation bar with large title
@@ -73,7 +78,6 @@ The app features a clean, iOS-style interface with:
 - Beautiful photo cards with favorites functionality
 - Detailed photo view with hero animations
 
-![Alt Text](Image URL )
 
 ## Development
 
