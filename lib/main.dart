@@ -318,7 +318,7 @@ class CityCard extends StatelessWidget {
                   flex: 3,
                   child: Stack(
                     children: [
-                      Expanded(
+                      Positioned.fill(
                         child: Hero(
                           tag: 'city-${item.id}',
                           child: Image.network(
@@ -366,28 +366,26 @@ class CityCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Expanded(
-                  flex: 1,
-                  child: Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.title,
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          '${item.country} • ${item.population}',
-                          style: TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
+                Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        item.title,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        '${item.country} • ${item.population}',
+                        style: TextStyle(fontSize: 11, color: CupertinoColors.secondaryLabel),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -522,24 +520,22 @@ class CityDetailScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24),
                   child: AspectRatio(
                     aspectRatio: 1,
-                    child: Expanded(
-                      child: Image.network(
-                        item.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  item.color.resolveFrom(context),
-                                  item.color.resolveFrom(context).withOpacity(0.7),
-                                ],
-                              ),
+                    child: Image.network(
+                      item.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                item.color.resolveFrom(context),
+                                item.color.resolveFrom(context).withOpacity(0.7),
+                              ],
                             ),
-                            child: Icon(CupertinoIcons.photo, size: 80, color: CupertinoColors.white),
-                          );
-                        },
-                      ),
+                          ),
+                          child: Icon(CupertinoIcons.photo, size: 80, color: CupertinoColors.white),
+                        );
+                      },
                     ),
                   ),
                 ),
