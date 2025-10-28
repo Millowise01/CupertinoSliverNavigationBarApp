@@ -1,3 +1,5 @@
+# *Presentation was done on the 28-10-2025*
+
 # Photo Gallery - CupertinoSliverNavigationBar Demo
 
 A beautiful iOS-style photo gallery app showcasing the CupertinoSliverNavigationBar widget with smooth scrolling animations and responsive design.
@@ -6,7 +8,7 @@ A beautiful iOS-style photo gallery app showcasing the CupertinoSliverNavigation
 
 ### CupertinoSliverNavigationBar Properties
 
-- **largeTitle**: "Photo Gallery" - Displays large title that smoothly collapses when scrolling
+- **largeTitle**: "Photo Gallery" - Displays a large title that smoothly collapses when scrolling
 - **backgroundColor**: Clean system background with subtle border
 - **trailing**: Grid/List view toggle button for different viewing modes
 
